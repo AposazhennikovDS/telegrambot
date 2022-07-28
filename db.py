@@ -36,7 +36,7 @@ class BotDB:
         with self.conn:
             return self.cursor.execute("UPDATE `users` SET `last_name` = ? WHERE `chat_id` = ?", (last_name, chat_id,))
 
-    def get_signup(self, chat_id, last_name):
+    def get_signup(self, chat_id):
         """Получаем статус регистрации"""
         with self.conn:
             result = self.cursor.execute("SELECT `signup` FROM `users` WHERE `chat_id` = ?", (chat_id,)).fetchall()
