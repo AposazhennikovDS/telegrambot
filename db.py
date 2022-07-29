@@ -31,6 +31,30 @@ class BotDB:
         with self.conn:
             return self.cursor.execute("UPDATE `users` SET `first_name` = ? WHERE `chat_id` = ?", (first_name, chat_id,))
 
+    def get_first_name(self, chat_id):
+        """Получаем Имя из БД"""
+        with self.conn:
+            result = self.cursor.execute("SELECT `first_name` FROM `users` WHERE `chat_id` = ?", (chat_id,)).fetchall()
+            for row in result:
+                first_name = str(row[0])
+            return first_name
+
+    def get_last_name(self, chat_id):
+        """Получаем Фамилию из БД"""
+        with self.conn:
+            result = self.cursor.execute("SELECT `last_name` FROM `users` WHERE `chat_id` = ?", (chat_id,)).fetchall()
+            for row in result:
+                last_name = str(row[0])
+            return last_name
+
+    def get_phone_number(self, chat_id):
+        """Получаем номер телефона из БД"""
+        with self.conn:
+            result = self.cursor.execute("SELECT `phone_number` FROM `users` WHERE `chat_id` = ?", (chat_id,)).fetchall()
+            for row in result:
+                phone_number = str(row[0])
+            return phone_number
+
     def set_last_name(self, chat_id, last_name):
         """Добавляем ФАМИЛИЮ"""
         with self.conn:
@@ -44,9 +68,12 @@ class BotDB:
                 signup = str(row[0])
             return signup
 
-    def set_signup(self, signup, chat_id):
+
+    def set_signup(self, chat_id, signup):
+        """Меняем статус регистрации"""
         with self.conn:
-            return  self.cursor.execute("UPDATE `users` SET `signup` = ? WHERE `chat_id` = ?", (signup, chat_id,))
+            return self.cursor.execute("UPDATE `users` SET `signup` = ? WHERE `chat_id` = ?", (signup, chat_id,))
+
 
 
     def get_user_id(self, chat_id):
@@ -54,6 +81,32 @@ class BotDB:
         result = self.cursor.execute("SELECT `id` FROM `users` WHERE `chat_id` = ?", (chat_id,))
         return result.fetchone()[0]
 
+
+    def add_record(self, chat_id, operation, value):
+        """Создаем запись о доходах/расходах"""
+        self.cursor.execute("INSERT INTO `court` (`users_id`, `operation`, `time`) VALUES (?, ?, ?)",
+            (self.get_user_id(chat_id),
+            operation == "+",
+            value))
+        return self.conn.commit()
+
+    def get_records(self, user_id, within = "all"):
+        """Получаем историю о доходах/расходах"""
+
+        if(within == "day"):
+            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? AND `date` BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY `date`",
+                (self.get_user_id(user_id),))
+        elif(within == "week"):
+            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? AND `date` BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY `date`",
+                (self.get_user_id(user_id),))
+        elif(within == "month"):
+            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? AND `date` BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY `date`",
+                (self.get_user_id(user_id),))
+        else:
+            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? ORDER BY `date`",
+                (self.get_user_id(user_id),))
+
+        return result.fetchall()
 
     def close(self):
         """Закрываем соединение с БД"""

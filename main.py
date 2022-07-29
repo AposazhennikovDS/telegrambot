@@ -1,11 +1,14 @@
 from aiogram import Bot, Dispatcher, executor, types
 import markup as nav
 from db import BotDB
+import re
 
 
 # bot_link = 'https://t.me/tennis_spb_test_bot'
 TOKEN = '5544871151:AAGz6v58fCCpGVMBRubRrBE7rxAV0xjxaCY'
 db = BotDB('tennisdb.db')
+
+regular_number = r'^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$'
 
 
 bot = Bot(token=TOKEN)
@@ -24,84 +27,109 @@ async def command_start(message: types.Message):
         await bot.send_message(message.from_user.id, "Для того, чтобы впервые записатсья на корт"
                                                      " потребуется регистрация, пожалуйста напиши свое имя(без фамилии): ")
     else:
-        await bot.send_message(message.from_user.id, "Вы уже зарегистрированы!", reply_markup= nav.MainMenu)
+        await bot.send_message(message.from_user.id, "Ты уже прошел регистрацию!", reply_markup= nav.MainMenu)
 
 
 
+# Функция для запуска сценария меню, если пользователь отправляет сообщение с названием одной из кнопок меню
+async def menu_scenario(bot, message, mark):
+    # Удаляем сообщение пользователя
+    await bot.delete_message(message.from_user.id, message.message_id)
+    #Создаем следующий сценарий меню и пишем сообщением название пункта меню, куда перешел пользователь
+    await bot.send_message(message.from_user.id, message.text, reply_markup=mark)
 
-
+# Функция для упрощения условий регистрации
+async def registration_state(message, bot, db, condition, text_mess, db_func):
+    if condition:
+        await bot.send_message(message.from_user.id, text_mess[0])
+    elif condition:
+        await bot.send_message(message.from_user.id, text_mess[1])
+    else:
+        db_func[0]()
+        db_func[1]()
+        await bot.send_message(message.from_user.id,text_mess[2])
 
 
 # Обработчик сообщений
 @dp.message_handler()
 async def bot_message(message: types.Message):
-
-    if message.chat.type == 'private':
-
         if message.text == "Записаться на корт":
-            await bot.delete_message(message.from_user.id, message.message_id)
-            await bot.send_message(message.from_user.id, 'Привет {0.first_name}'.
-                                 format(message.from_user), reply_markup=nav.RentMenu)
+            await menu_scenario(bot, message, nav.RentMenu)
         elif message.text == "Мои записи":
-            await bot.delete_message(message.from_user.id, message.message_id)
-            await bot.send_message(message.from_user.id, 'Привет {0.first_name}'.
-                                 format(message.from_user), reply_markup=nav.MyRentsMenu)
+            await menu_scenario(bot, message, nav.MyRentsMenu)
         elif message.text == "Посмотреть расписание":
-            await bot.delete_message(message.from_user.id, message.message_id)
-            await bot.send_message(message.from_user.id, 'Привет {0.first_name}'.
-                                 format(message.from_user), reply_markup=nav.TimeTableMenu)
+            await menu_scenario(bot, message, nav.TimeTableMenu)
         elif message.text == "Посмотреть анкету":
-            await bot.delete_message(message.from_user.id, message.message_id)
-            await bot.send_message(message.from_user.id,'Привет {0.first_name}'.
-                                 format(message.from_user), reply_markup=nav.ProfileMenu)
-        elif message.text == "Главное меню":
-            await bot.delete_message(message.from_user.id, message.message_id)
-            await bot.send_message(message.from_user.id,'Привет {0.first_name}'.
-                                 format(message.from_user), reply_markup=nav.MainMenu)
-        elif message.text == "Выбрать дату":
-            await bot.delete_message(message.from_user.id, message.message_id)
-            await bot.send_message(message.from_user.id,'Привет {0.first_name}'.
-                                 format(message.from_user), reply_markup=nav.MainMenu)
-
-        elif db.get_signup(message.from_user.id) == 'setfirstname':
-            if(len(message.text) > 15):
-                await bot.send_message(message.from_user.id, "Слишком длинное имя, укажите имя без фамилии")
-            elif not check(message.text):
-                await bot.send_message(message.from_user.id, "Вы ввели запрещенный символ, "
-                                                             "имя должно состоять только из букв русского или "
-                                                             "латинского алфавита")
+            await menu_scenario(bot, message, nav.ProfileMenu)
+            if len(db.get_phone_number(message.from_user.id)) > 1:
+                await bot.send_message(message.from_user.id, f"Имя: {db.get_first_name(message.from_user.id)}, "
+                                                         f"\nФамилия: {db.get_last_name(message.from_user.id)}, "
+                                                         f"\nНомер телефона: {db.get_phone_number(message.from_user.id)}")
             else:
+                await bot.send_message(message.from_user.id, f"Имя: {db.get_first_name(message.from_user.id)}, "
+                                                             f"\nФамилия: {db.get_last_name(message.from_user.id)}")
+
+        elif message.text == "Главное меню":
+            await menu_scenario(bot, message, nav.MainMenu)
+        elif message.text == "Выбрать дату":
+            await menu_scenario(bot, message, nav.MainMenu)
+
+        elif db.get_signup(message.from_user.id) == "setfirstname":
+
+            if (len(message.text) > 15):
+                await bot.send_message(message.from_user.id, "Слишком длинное имя, укажи имя без фамилии")
+            elif (len(message.text) < 3):
+                await bot.send_message(message.from_user.id, "Слишком короткое имя, укажи настоящее имя: ")
+
+            elif check(message.text):
+                await bot.send_message(message.from_user.id, "Ты ввел запрещенный символ, "
+                                                         "имя должно состоять только из букв русского или "
+                                                         "латинского алфавита")
+
+            else:
+
                 db.set_first_name(message.from_user.id, message.text)
                 db.set_signup(message.from_user.id, "setlastname")
-                await bot.send_message(message.from_user.id, "Отлично! Двигаемся дальше! Напиши свою Фамилию(без имени): ")
+                await bot.send_message(message.from_user.id,
+                                       f"Отлично! Двигаемся дальше! Напиши свою Фамилию(без имени): ")
 
         elif db.get_signup(message.from_user.id) == "setlastname":
-            if(len(message.text) > 20):
-                await bot.send_message(message.from_user.id, "Слишком длинная фамилия, укажите настоящую фамилию: ")
+
+            if (len(message.text) > 20):
+                await bot.send_message(message.from_user.id, "Слишком длинная фамилия, укажи настоящую фамилию: ")
+
             elif (len(message.text) < 4):
-                await bot.send_message(message.from_user.id, "Слишком короткая фамилия, укажите настоящую фамилию: ")
-            elif not check(message.text):
-                await bot.send_message(message.from_user.id, "Вы ввели запрещенный символ, "
-                                                             "фамилия должна состоять только из букв русского или латинского алфавита. Попробуйте снова: ")
+                await bot.send_message(message.from_user.id, "Слишком короткая фамилия, укажи настоящую фамилию: ")
+
+            elif check(message.text):
+                await bot.send_message(message.from_user.id, "Ты ввел запрещенный символ, "
+                                                         "фамилия должна состоять только из букв русского или латинского алфавита. Попробуй снова: ")
+
             else:
+
                 db.set_last_name(message.from_user.id, message.text)
                 db.set_signup(message.from_user.id, "setphonenumber")
                 await bot.send_message(message.from_user.id,
-                                       "Ты просто супер! Мы почти у цели! Оставь свой номер телефона в формате (8XXXXXXXXXX), "
+                                       f"Ты просто супер! Мы почти у цели! Оставь свой номер телефона, "
                                        "чтобы мы могли с тобой связаться, если не хочешь оставлять номер, просто напиши 0 в ответном сообщении️: ")
 
         elif db.get_signup(message.from_user.id) == "setphonenumber":
-            if (len(message.text) > 11):
-                await bot.send_message(message.from_user.id, "Ошибка! Слишком много цифр, если не хотите оставлять номер, отправьте 0 в ответном сообщении")
-            elif not (message.text.isdigit()):
-                await bot.send_message(message.from_user.id, "Вы ввели запрещенный символ, "
-                                                             "фамилия должна состоять только из букв русского или латинского алфавита. Попробуйте снова: ")
-            else:
+
+            if message.text == "0":
+
                 db.set_phone_number(message.from_user.id, message.text)
                 db.set_signup(message.from_user.id, "done")
-                await bot.send_message(message.from_user.id, "Вы успешно зарегистрированы!", reply_markup=nav.MainMenu)
+                await bot.send_message(message.from_user.id, f"Ты успешно завершил регистрацию!",
+                                       reply_markup=nav.MainMenu)
 
-
+            elif bool(re.match(regular_number, message.text)):
+                    db.set_phone_number(message.from_user.id, message.text)
+                    db.set_signup(message.from_user.id, "done")
+                    await bot.send_message(message.from_user.id, f"Ты успешно завершил регистрацию!",
+                                           reply_markup=nav.MainMenu)
+            else:
+                await bot.send_message(message.from_user.id, "Неправильный формат номера, оставь свой номер телефона, "
+                                       "чтобы мы могли с тобой связаться, если не хочешь оставлять номер, просто напиши 0 в ответном сообщении: ")
 
 
 # @dp.message_handler(commands='test')
