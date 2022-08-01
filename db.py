@@ -81,32 +81,20 @@ class BotDB:
         result = self.cursor.execute("SELECT `id` FROM `users` WHERE `chat_id` = ?", (chat_id,))
         return result.fetchone()[0]
 
-
-    def add_record(self, chat_id, operation, value):
-        """Создаем запись о доходах/расходах"""
-        self.cursor.execute("INSERT INTO `court` (`users_id`, `operation`, `time`) VALUES (?, ?, ?)",
-            (self.get_user_id(chat_id),
-            operation == "+",
-            value))
-        return self.conn.commit()
-
-    def get_records(self, user_id, within = "all"):
-        """Получаем историю о доходах/расходах"""
-
-        if(within == "day"):
-            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? AND `date` BETWEEN datetime('now', 'start of day') AND datetime('now', 'localtime') ORDER BY `date`",
-                (self.get_user_id(user_id),))
-        elif(within == "week"):
-            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? AND `date` BETWEEN datetime('now', '-6 days') AND datetime('now', 'localtime') ORDER BY `date`",
-                (self.get_user_id(user_id),))
-        elif(within == "month"):
-            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? AND `date` BETWEEN datetime('now', 'start of month') AND datetime('now', 'localtime') ORDER BY `date`",
-                (self.get_user_id(user_id),))
-        else:
-            result = self.cursor.execute("SELECT * FROM `records` WHERE `users_id` = ? ORDER BY `date`",
-                (self.get_user_id(user_id),))
-
-        return result.fetchall()
+    
+    def is_time_conflict(self, chat_id, date, time_begin, time_end):
+        """" проверяем предполагаемую бронь на конфликты с уже существующими"""
+        try:    
+            result = self.cursor.execute("SELECT count(*) FROM `reservation` where `date` = ? AND  `time_start` < ? AND `time_end` > ?",
+                                         (date, time_end, time_begin,))
+        
+            if (result[0] == 0):
+                return False
+            else:
+                return True
+        
+        except Exception as e:
+            print(e)
 
     def close(self):
         """Закрываем соединение с БД"""
