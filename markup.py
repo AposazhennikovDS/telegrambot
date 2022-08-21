@@ -9,6 +9,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 # ------------------- Main Menu-------------------
 
 
+
+
+
 """Создаем кнопки в главном меню"""
 
 btnRent = KeyboardButton('Записаться на корт')
@@ -111,6 +114,17 @@ TimeTableMenu = ReplyKeyboardMarkup(resize_keyboard = True).\
 
 btnEditRent = KeyboardButton('Редактировать профиль')
 
+btnNewRegistration = KeyboardButton('Пройти регистрацию сначала')
+btnNewFirstName = KeyboardButton('Изменить имя')
+btnNewLastName = KeyboardButton('Изменить фамилию')
+btnNewAge = KeyboardButton('Изменить возраст')
+btnNewPhoto = KeyboardButton('Изменить/Добавить фото')
+
+
+
+
 # Основная функция для формирования меню "Посмотреть анкету"
 ProfileMenu = ReplyKeyboardMarkup(resize_keyboard = True).\
                                             add(btnEditRent, btnMain)
+EditProfile = ReplyKeyboardMarkup(resize_keyboard = True).\
+                                            add(btnNewRegistration, btnNewFirstName, btnNewLastName, btnNewAge, btnNewPhoto, btnMain)
