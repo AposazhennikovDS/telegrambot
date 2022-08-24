@@ -1,13 +1,15 @@
 import sqlite3
 
+
 class BotDB:
 
     def __init__(self, db_file):
         # try:
-            self.conn = sqlite3.connect(db_file)
-            self.cursor = self.conn.cursor()
-        # except Exception:
-        #     print("Ошибка при подключении к файлу базы данных", Exception)
+        self.conn = sqlite3.connect(db_file)
+        self.cursor = self.conn.cursor()
+
+    # except Exception:
+    #     print("Ошибка при подключении к файлу базы данных", Exception)
 
     def add_user(self, chat_id):
         """Добавляем юзера в базу"""
@@ -15,7 +17,8 @@ class BotDB:
             self.cursor.execute("INSERT INTO `users` (`chat_id`) VALUES (?)", (chat_id,))
             return self.conn.commit()
         except:
-            print("Ошибка при добавлении пользователя в бд")
+            # print("Ошибка при добавлении пользователя в бд")
+            pass
 
     def user_exists(self, chat_id):
         """Проверяем, есть ли юзер в базе"""
@@ -23,10 +26,8 @@ class BotDB:
             result = self.cursor.execute("SELECT `id` FROM `users` WHERE `chat_id` = ?", (chat_id,))
             return bool(len(result.fetchall()))
         except Exception:
-            print("Ошибка при проверки наличия пользователя в бд", Exception)
-
-
-
+            # print("Ошибка при проверки наличия пользователя в бд", Exception)
+            pass
 
     # def set_nickname(self, chat_id, nickname):
     #     """Добавляем ник в базу"""
@@ -40,23 +41,21 @@ class BotDB:
         """
         # try:
         with self.conn:
-                for key, value in kwargs.items():
-                    print(key, value)
-                    self.cursor.execute(f"UPDATE `users` SET `{key}` = ? WHERE `chat_id` = ?",(value, chat_id,))
-                    self.conn.commit()
-                return
-
+            for key, value in kwargs.items():
+                # print(key, value)
+                self.cursor.execute(f"UPDATE `users` SET `{key}` = ? WHERE `chat_id` = ?", (value, chat_id,))
+                self.conn.commit()
+            return
 
     def get_db_args(self, chat_id, *args):
         """Получаем любой(ые) элемент(ы) из таблицы users"""
         data = dict()
         with self.conn:
             for key in args:
-                    result = self.cursor.execute(f"SELECT `{key}` FROM `users` WHERE `chat_id` = ?", (chat_id,)).fetchall()
-                    for row in result:
-                        data[key] = str(row[0])
+                result = self.cursor.execute(f"SELECT `{key}` FROM `users` WHERE `chat_id` = ?", (chat_id,)).fetchall()
+                for row in result:
+                    data[key] = str(row[0])
             return data
-
 
     def get_user_id(self, chat_id):
         """Достаем id юзера в базе по его user_id"""
@@ -76,7 +75,8 @@ class BotDB:
                 return True
 
         except Exception as e:
-            print(e)
+            # print(e)
+            pass
 
     def close(self):
         """Закрываем соединение с БД"""

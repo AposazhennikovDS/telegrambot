@@ -1,9 +1,7 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
-
 class Registration(StatesGroup):
-
     first_name = State()
     last_name = State()
     age = State()
@@ -13,7 +11,6 @@ class Registration(StatesGroup):
 
 
 class EditProfile(StatesGroup):
-
     first_name = State()
     last_name = State()
     age = State()
@@ -21,3 +18,8 @@ class EditProfile(StatesGroup):
     photo = State()
     description = State()
     done = State()
+
+
+class Calendar(StatesGroup):
+    date = State()
+    Time = State()
