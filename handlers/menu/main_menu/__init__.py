@@ -1,6 +1,12 @@
 from handlers.menu.calendar_date_and_time import SimpleCalendar, TimeChoose
 from handlers.profile_edit.changes import *
 from handlers.registration.start import user_profile
+from FSM import ChooseDateTime
+
+
+
+
+
 
 
 # Функция для запуска сценария меню, у нас повторяются действия при запуске любого сценария меню, за исключением
@@ -27,6 +33,7 @@ async def bot_message(message: types.Message):
     elif message.text == "Главное меню":
         await menu_scenario(bot, message, nav.MainMenu)
     elif message.text == "Выбрать дату":
+        await ChooseDateTime.date.set()
         await menu_scenario(bot, message, await SimpleCalendar().start_calendar())
     elif message.text == "Редактировать профиль":
         await menu_scenario(bot, message, nav.EditProfile)

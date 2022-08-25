@@ -1,5 +1,4 @@
 from aiogram import types
-
 from FSM import Registration
 from config import dp, re, FSMContext
 
@@ -17,7 +16,7 @@ async def user_profile(message: types.Message):
                                    reply_markup=nav.ProfileMenu)
     except:
         await bot.send_photo(chat_id=message.from_user.id, photo=data['photo'],
-                             caption=f"Имя:  {data['first_name']},\nФамилия:  {data['last_name']},\nВозраст:  {data['age']},\n"
+                             caption=f"Имя:  {data['first_name']},\nФамилия:  {data['last_name']},\nВозраст:  {data['age']},\n" 
                                      f"Номер телефона:  {data['phone_number']}\n\n{data['description']}",
                              reply_markup=nav.ProfileMenu)
 

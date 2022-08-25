@@ -12,9 +12,9 @@ calendar_callback = CallbackData('simple_calendar', 'act', 'year', 'month', 'day
 class SimpleCalendar:
 
     async def start_calendar(
-            self,
-            year: int = datetime.now().year,
-            month: int = datetime.now().month
+        self,
+        year: int = datetime.now().year,
+        month: int = datetime.now().month
     ) -> InlineKeyboardMarkup:
         """
         Creates an inline keyboard with the provided year and month
@@ -48,7 +48,7 @@ class SimpleCalendar:
         for week in month_calendar:
             inline_kb.row()
             for day in week:
-                if (day == 0):
+                if(day == 0):
                     inline_kb.insert(InlineKeyboardButton(" ", callback_data=ignore_callback))
                     continue
                 inline_kb.insert(InlineKeyboardButton(
@@ -83,7 +83,7 @@ class SimpleCalendar:
             await query.answer(cache_time=60)
         # user picked a day button, return date
         if data['act'] == "DAY":
-            await query.message.delete_reply_markup()  # removing inline keyboard
+            await query.message.delete_reply_markup()   # removing inline keyboard
             return_data = True, datetime(int(data['year']), int(data['month']), int(data['day']))
         # user navigates to previous year, editing message with new calendar
         if data['act'] == "PREV-YEAR":

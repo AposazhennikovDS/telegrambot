@@ -30,7 +30,6 @@ async def change_name(message: types.Message):
 async def check_first_name(message: types.Message):
     await message.reply("Введи настоящее имя!")
 
-
 # Хэндлер для обработки функции "Изменить имя" в цепочке меню "анкета"
 # Если FSM стоит в first_name и предыдущий хэндлер пройден -> заменить в базе данных имя на текст сообщения,
 # отправить сообщение об изменении, завершить FSM, отправить пользователю его профиль(ф-ция из main_menu)
@@ -67,7 +66,6 @@ async def load_last_name(message: types.Message, state: FSMContext) -> None:
     await state.finish()
     await user_profile(message)
 
-
 # Функция для изменения фамилии, выставляем наш FSM в age, приглашаем написать фамилию.
 async def change_age(message: types.Message):
     await bot.send_message(message.from_user.id, "Напиши свой возраст, сколько тебе полных лет?")
@@ -92,7 +90,6 @@ async def load_age(message: types.Message, state: FSMContext) -> None:
                            reply_markup=nav.ProfileMenu)
     await state.finish()
     await user_profile(message)
-
 
 @dp.message_handler(lambda message: not message.text.isdigit() or (
         float(message.text) != 0 and not re.match(regular_number, message.text)), state=EditProfile.phone_number)

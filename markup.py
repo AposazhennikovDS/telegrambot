@@ -3,6 +3,9 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 # ------------------- Main Menu-------------------
 
 
+
+
+
 """Создаем кнопки в главном меню"""
 
 btnRent = KeyboardButton('Записаться на корт')
@@ -94,12 +97,14 @@ FutureRentsMenu = ReplyKeyboardMarkup(resize_keyboard = True).\
 
 
 # Основная функция для формирования меню "Посмотреть расписание"
-TimeTableMenu = ReplyKeyboardMarkup(resize_keyboard = True). \
-    add(btnChooseDate, btnRent, btnMain)
+TimeTableMenu = ReplyKeyboardMarkup(resize_keyboard = True).\
+                                            add(btnChooseDate, btnRent, btnMain)
+
 
 # ------------------- Profile Menu -------------------
 """В будущем здесь будеть кнопка найти оппонента, 
 когда мы реализуем функцию рейтинга через ИИ"""
+
 
 btnEditRent = KeyboardButton('Редактировать профиль')
 
@@ -109,8 +114,11 @@ btnNewLastName = KeyboardButton('Изменить фамилию')
 btnNewAge = KeyboardButton('Изменить возраст')
 btnNewPhoto = KeyboardButton('Изменить/Добавить фото')
 
+
+
+
 # Основная функция для формирования меню "Посмотреть анкету"
-ProfileMenu = ReplyKeyboardMarkup(resize_keyboard=True). \
-    add(btnEditRent, btnMain)
-EditProfile = ReplyKeyboardMarkup(resize_keyboard=True). \
-    add(btnNewRegistration, btnNewFirstName, btnNewLastName, btnNewAge, btnNewPhoto, btnMain)
+ProfileMenu = ReplyKeyboardMarkup(resize_keyboard = True).\
+                                            add(btnEditRent, btnMain)
+EditProfile = ReplyKeyboardMarkup(resize_keyboard = True).\
+                                            add(btnNewRegistration, btnNewFirstName, btnNewLastName, btnNewAge, btnNewPhoto, btnMain)
