@@ -18,12 +18,23 @@ async def process_simple_calendar(callback_query: CallbackQuery, callback_data: 
         selected, date = await SimpleCalendar().process_selection(callback_query, callback_data)
         if selected:
             date_time['date'] = date
-            await ChooseDateTime.next()
+            await state.finish()
             await callback_query.message.answer(
                 f'You selected {date.strftime("%d/%m/%Y")}',
-                reply_markup=await TimeChoose().start_clock()
+                reply_markup=nav.RentMenu
 
             )
+@dp.callback_query_handler(clock_cal_callback.filter(), state=ChooseDateTime.time)
+async def choose_begin_time(callback_btime_query: CallbackQuery, callback_data: dict, state: FSMContext):
+    async with state.proxy() as date_time:
+        selected, time = await TimeChoose().process_selection(callback_btime_query, callback_data)
+        if selected:
+            date_time['begin_time'] = time
+            print(date_time['date'], date_time['begin_time'])
+            await MakeAnEnry.next()
+            await callback_btime_query.message.answer(
+                f'Вы выбрали запись на корт с: {time}, \nТеперь выберете до какого времени хотите записаться',
+                reply_markup=nav.MainMenu)
 
 # simple calendar usage
 @dp.callback_query_handler(simple_cal_callback.filter(), state=MakeAnEnry.date)
