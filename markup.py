@@ -110,8 +110,10 @@ btnEditRent = KeyboardButton('Редактировать профиль')
 
 btnNewRegistration = KeyboardButton('Пройти регистрацию сначала')
 btnNewFirstName = KeyboardButton('Изменить имя')
+btnNewPhoneNumber = KeyboardButton('Изменить/Добавить номер')
 btnNewLastName = KeyboardButton('Изменить фамилию')
 btnNewAge = KeyboardButton('Изменить возраст')
+btnNewDescr = KeyboardButton('Изменить описание(NTRP)')
 btnNewPhoto = KeyboardButton('Изменить/Добавить фото')
 
 
@@ -121,4 +123,4 @@ btnNewPhoto = KeyboardButton('Изменить/Добавить фото')
 ProfileMenu = ReplyKeyboardMarkup(resize_keyboard = True).\
                                             add(btnEditRent, btnMain)
 EditProfile = ReplyKeyboardMarkup(resize_keyboard = True).\
-                                            add(btnNewRegistration, btnNewFirstName, btnNewLastName, btnNewAge, btnNewPhoto, btnMain)
+                                            add(btnNewPhoneNumber, btnNewPhoto, btnNewFirstName, btnNewLastName, btnNewAge,btnNewDescr,btnNewRegistration, btnMain)

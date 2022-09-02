@@ -1,6 +1,7 @@
 from aiogram.types import CallbackQuery
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
+import datetime
 
 # setting callback_data prefix and parts
 clock_callback = CallbackData('clock_callback', 'act', 'min')
@@ -53,5 +54,5 @@ class TimeChoose:
 
         if data['act'] == "MIN":
             await query.message.delete_reply_markup()   # removing inline keyboard
-            return_data = True, str(data['min'])
+            return_data = True, datetime.datetime.strptime(str(data['min']), "%H:%M").time()
         return return_data

@@ -9,16 +9,20 @@ async def user_profile(message: types.Message):
     data = db.get_db_args(message.from_user.id, 'photo',
                           'first_name', 'last_name', 'age', 'phone_number', 'description')
     try:
-        if int(data['photo']) == 0:
+        if len(data['photo']) <= 1:
+            await bot.delete_message(message.from_user.id, message.message_id)
             await bot.send_message(chat_id=message.from_user.id,
                                    text=f"Имя:  {data['first_name']},\nФамилия:  {data['last_name']},\nВозраст:  {data['age']},\n"
-                                        f"Номер телефона:  {data['phone_number']}\n\n{data['description']}",
+                                        f"Номер телефона:  {data['phone_number']}\nNTRP:   {data['description']}",
                                    reply_markup=nav.ProfileMenu)
+        else:
+            await bot.delete_message(message.from_user.id, message.message_id)
+            await bot.send_photo(chat_id=message.from_user.id, photo=data['photo'],
+                                 caption=f"Имя:  {data['first_name']},\nФамилия:  {data['last_name']},\nВозраст:  {data['age']},\n"
+                                         f"Номер телефона:  {data['phone_number']}\nNTRP:  {data['description']}",
+                                 reply_markup=nav.ProfileMenu)
     except:
-        await bot.send_photo(chat_id=message.from_user.id, photo=data['photo'],
-                             caption=f"Имя:  {data['first_name']},\nФамилия:  {data['last_name']},\nВозраст:  {data['age']},\n" 
-                                     f"Номер телефона:  {data['phone_number']}\n\n{data['description']}",
-                             reply_markup=nav.ProfileMenu)
+        pass
 
 
 # хэндлер = обработчик
@@ -34,7 +38,7 @@ async def cmd_start(message: types.Message) -> None:
             "Для того, чтобы впервые записаться на корт потребуется регистрация напиши свое имя(без фамилии): ")
         await Registration.first_name.set()
     else:
-        await message.answer("Вы уже зарегистрированы!", reply_markup=nav.MainMenu)
+        await message.answer("Добро пожаловать!", reply_markup=nav.MainMenu)
 
 
 # Хэндлер проверочный, чтобы отсечь "левые" имена, если наш FSM в первом режиме(first_name) следующие сообщения
@@ -129,7 +133,7 @@ async def load_phone_number(message: types.Message, state: FSMContext) -> None:
 @dp.message_handler(lambda message: message.text.isdigit() and float(message.text) == 0, state=Registration.photo)
 async def check_photo_0(message: types.Message, state: FSMContext) -> None:
     await message.reply(
-        'Расскажи немного о себе, как давно играешь в теннис? Что хочешь улучшить? Что считаешь своей сильной стороной?')
+        'Укажи свой NTRP')
     await Registration.next()
 
 
@@ -148,8 +152,7 @@ async def check_photo(message: types.Message):
 async def load_photo(message: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['photo'] = message.photo[0].file_id
-    await message.reply('Расскажи немного о себе, как давно играете в теннис? Что хочешь улучшить? Что считаешь '
-                        'своей сильной стороной?')
+    await message.reply('Укажи свой NTRP')
     await Registration.next()
 
 
@@ -177,13 +180,14 @@ async def load_desc(message: types.Message, state: FSMContext) -> None:
                                phone_number=data['phone_number'], description=data['description'])
 
         except:
+            await bot.send_message(message.from_user.id, 'Анкета успешно создана!')
             await bot.send_message(chat_id=message.from_user.id,
                                    text=f"Имя:  {data['first_name']},\nФамилия:  {data['last_name']},\nВозраст:  {data['age']},\n"
                                         f"Номер телефона:  {data['phone_number']}\n\n{data['description']}")
             db.set_db_args(message.from_user.id, photo=0,
                            first_name=data['first_name'], last_name=data['last_name'], age=data['age'],
                            phone_number=data['phone_number'], description=data['description'])
-    await message.reply('Анкета успешно создана!')
+
     await state.finish()
 
 

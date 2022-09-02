@@ -72,6 +72,7 @@ async def change_age(message: types.Message):
     await EditProfile.age.set()
 
 
+
 # Проверочный хэндлер идентичный тому, что был при регистрации, только FSM он принимает не из класса Registration,
 # а из класса EditProfile.
 @dp.message_handler(lambda message: not message.text.isdigit() or float(message.text) > 100 or float(message.text) < 4,
@@ -97,14 +98,53 @@ async def check_phone_number(message: types.Message):
     await message.reply(
         'Неправильный формат номера, если не хочешь оставлять номер - просто напиши 0(ноль) в ответном сообщении: ')
 
+async def change_phone_number(message: types.Message):
+    await bot.send_message(message.from_user.id, "Напиши свой номер телефона: ")
+    await EditProfile.phone_number.set()
+# Хэндлер проверочный, чтобы отсечь "левые" номера, если наш FSM в режиме (phone_number) следующие сообщения сначала
+# проходят через этот обработчик. Сообщение проверку проходит: Если текст состоит из цифр, если цифра равна нулю или
+# если прошел проверку регулярным выражением regular_number из файла config.
+@dp.message_handler(state=EditProfile.phone_number)
+async def load_first_name(message: types.Message, state: FSMContext) -> None:
+    db.set_db_args(message.from_user.id, phone_number=message.text)
+    await bot.send_message(message.from_user.id, f"Номер был изменен на:  {message.text}", reply_markup=nav.ProfileMenu)
+    await state.finish()
+    await user_profile(message)
+
+
+async def change_photo(message: types.Message):
+    await bot.send_message(message.from_user.id, "Прикрепи фото в сообщении: ")
+    await EditProfile.photo.set()
 
 @dp.message_handler(lambda message: message.text.isdigit() and float(message.text) == 0, state=EditProfile.photo)
 async def check_photo_0(message: types.Message, state: FSMContext) -> None:
-    await message.reply(
-        'Расскажи немного о себе, как давно играешь в теннис? Что хочешь улучшить? Что считаешь своей сильной стороной?')
-    await EditProfile.next()
-
+    await message.reply('Сохраняю профиль без фото')
+    db.set_db_args(message.from_user.id, photo=message.text)
+    await state.finish()
+    await user_profile(message)
 
 @dp.message_handler(lambda message: not message.text.isdigit() or not message.photo, state=EditProfile.photo)
 async def check_photo(message: types.Message):
     await message.reply('Это не фотография!Если не хочешь отправлять фото напиши 0(ноль) в ответном сообщении: ')
+
+
+async def change_descr(message:types.Message):
+    await bot.send_message(message.from_user.id, "Напиши о себе то, что поможет другим игрокам лучше узнать тебя, например свой NTRP уровень")
+    await EditProfile.description.set()
+
+@dp.message_handler(state=EditProfile.description)
+async def load_description(message: types.Message, state: FSMContext) -> None:
+    db.set_db_args(message.from_user.id, description=message.text)
+    await bot.send_message(message.from_user.id, f"Описание было изменено на:  {message.text}", reply_markup=nav.ProfileMenu)
+    await state.finish()
+    await user_profile(message)
+
+# Если наш FSM в режиме(photo) и прошел предыдущие два обработчика, все следующие сообщения принимаются данным
+# хэндлером. Функция принимаем сообщение и ничего не возвращает. Добавляет текст сообщения в словарь data с ключем
+# "photo", переключает FSM в следующий режим(description) Отправляет приглашающее сообщения для отправки описания профиля.
+@dp.message_handler(content_types=['photo'], state=EditProfile.photo)
+async def load_photo(message: types.Message, state: FSMContext) -> None:
+    db.set_db_args(message.from_user.id, photo=message.photo[0].file_id)
+    print(db.get_db_args(message.from_user.id, "photo"))
+    await state.finish()
+    await user_profile(message)
